@@ -1,6 +1,11 @@
 import axios from 'axios';
+import dotenv from 'dotenv'
 
+dotenv.configDotenv({
+    path : '.env'
+})
 
+const githubToken = process.env.GITHUB_TOKEN;
 
 
 const AxiosInstance = axios.create({
@@ -10,7 +15,7 @@ const AxiosInstance = axios.create({
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
     'User-Agent': 'orgpulse-cli',
-    Authorization: `token ${process.env.GITHUB_TOKEN}`,
+    Authorization: `token ${githubToken}`,
   },
 });
 

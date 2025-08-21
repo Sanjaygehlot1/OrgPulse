@@ -9,7 +9,6 @@ async function makeRequestWithRetry(config, retries = 3, delay = 1000) {
         if (error.response) {
             const { status, headers } = error.response;
 
-            console.log(status,headers)
            
             if (status === 403 && headers['x-ratelimit-remaining'] === '0') {
                 const resetTime = new Date(headers['x-ratelimit-reset'] * 1000);
@@ -32,15 +31,16 @@ async function makeRequestWithRetry(config, retries = 3, delay = 1000) {
             }
         }
 
-        if (retries > 0) {
+        if (retries > 0 && error.response.status != 401) {
             console.warn(
                 `Request failed. Retrying in ${delay / 1000}s... (${retries} retries left)`
             );
             await new Promise((res) => setTimeout(res, delay));
             return makeRequestWithRetry(config, retries - 1, delay * 2);
         }
+        
 
-        throw error;
+        throw error.response.data.message;
     }
 }
 
