@@ -27,4 +27,4 @@ issueSchema.index({repo : 1, state : 1})
 
 const issueModel = new  mongoose.model("issues", issueSchema);
 
-export {issueModel};
+export {issueModel, issueSchema};

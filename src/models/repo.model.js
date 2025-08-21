@@ -48,4 +48,5 @@ repoSchema.index({org : 1, name : 1}, {unique : true})
 
 const repoModel = new mongoose.model("repo", repoSchema);
 
-export {repoModel}
+
+export {repoModel, repoSchema}
