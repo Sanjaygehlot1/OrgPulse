@@ -5,6 +5,10 @@ const repoSchema = new Schema({
         type: String,
         required: true
     },
+    repo_name : {
+        type: String,
+        required : true
+    },
     url: {
         type: String,
         required: true
@@ -43,8 +47,6 @@ const repoSchema = new Schema({
 
 
 
-repoSchema.index({org : 1, stars : -1})
-repoSchema.index({org : 1, name : 1}, {unique : true})
 
 const repoModel = new mongoose.model("repo", repoSchema);
 

@@ -1,7 +1,9 @@
 import { Command } from 'commander'
 import { configDotenv } from 'dotenv';
-import { initDB } from '../cli/initDB';
-import { initDB } from '../cli/initDB';
+import { initDB } from '../cli/initDB.js';
+import { fetchOrgData } from '../cli/fetch.js';
+import { showTopRepos } from '../cli/top.js';
+import { exportRepos } from '../cli/exportAsCSV.js';
 
 configDotenv({
     path : '.env'
@@ -22,19 +24,23 @@ program
     .action(initDB)
     
 program
-    .command('fetch --org <orgName>')
+    .command('fetch <orgName>')
     .description('fetch all repositories for the organization')
-    .action(initDB)
+    .action(fetchOrgData)
+    
+program
+    .command('sort <orgName>')
+    .option('-m, --metric <metric>', 'sort by issues or stars')
+    .option('-l, --limit <limit>', 'limit the number of repos to show')
+    .description('fetch all repositories for the organization')
+    .action(showTopRepos)
 
 program
-    .command('fetch --org <orgName> --repo <repoName>')
-    .description('fetch all issues for the repository')
-    .action(initDB)
+    .command('export <repoName> <filePath>')
+    .description('fetch all repositories for the organization')
+    .action(exportRepos)
 
-program
-    .command('fetch --org <orgName> --repo <repoName>')
-    .description('fetch all issues for the repository')
-    .action(initDB)
+
 
 
 

@@ -1,43 +1,95 @@
-import { AxiosInstance } from "../utils/axiosInstance";
+import { AxiosInstance } from "../utils/axiosInstance.js";
 
 
-const getNextPageUrl = (link) => {
+async function makeRequestWithRetry(config, retries = 3, delay = 1000) {
+    try {
+        
+        return await AxiosInstance(config);
+    } catch (error) {
+        if (error.response) {
+            const { status, headers } = error.response;
 
-    if (!link) return null;
+            console.log(status,headers)
+           
+            if (status === 403 && headers['x-ratelimit-remaining'] === '0') {
+                const resetTime = new Date(headers['x-ratelimit-reset'] * 1000);
+                const waitTime = resetTime.getTime() - Date.now();
 
-    const nextLink = link
-        .split(',')
-        .map(item => item.trim().endsWith('rel="next"'))[0];
+                if (waitTime > 0) {
+                    console.warn(
+                        `Rate limit hit. Waiting for ${Math.ceil(waitTime / 1000)}s...`
+                    );
+                    await new Promise((res) => setTimeout(res, waitTime));
+                    return makeRequestWithRetry(config, retries, delay); 
+                }
+            }
 
-    return nextLink ? nextLink.split(';')[0].slice(1, -1) : null;
+            if (status >= 400 && status < 500) {
+                console.error(
+                    `Request failed with status ${status}. Not retrying.`
+                );
+                
+            }
+        }
 
+        if (retries > 0) {
+            console.warn(
+                `Request failed. Retrying in ${delay / 1000}s... (${retries} retries left)`
+            );
+            await new Promise((res) => setTimeout(res, delay));
+            return makeRequestWithRetry(config, retries - 1, delay * 2);
+        }
+
+        throw error;
+    }
 }
 
-const getResourses = async (link) =>{
+ 
+const getNextPageUrl = (linkHeader) => {
+    if (!linkHeader) return null;
+
+    const links = linkHeader.split(",");
+    for (const link of links) {
+        const [urlPart, relPart] = link.split(";");
+        if (relPart && relPart.includes('rel="next"')) {
+            return urlPart.trim().slice(1, -1);
+        }
+    }
+    return null;
+};
+
+ 
+const getResources = async (link) => {
     let nextPageUrl = link;
     let result = [];
-    console.log('fetching all issues for you... please wait')
+
+    console.log("Fetching all resources... Please wait");
+
     while (nextPageUrl) {
-        const respose = await AxiosInstance.get(nextPageUrl);
-        result = [...result, ...respose.data];
+        const response = await makeRequestWithRetry({
+            url: nextPageUrl,
+            method: "GET",
+        });
 
-        nextPageUrl = getNextPageUrl(respose.headers.link);
+        
 
+        result = [...result, ...response.data];
+
+        nextPageUrl = getNextPageUrl(response.headers.link);
     }
 
     return result;
-}
-
+};
+ 
 const getAllRepos = async (orgName) => {
+    return await getResources(`/orgs/${orgName}/repos?per_page=100`);
+};
 
-   return await getResourses(`/orgs/${orgName}/repos?per_page=100`)
-
-}
-
+ 
 const getAllIssues = async (orgName, repoName) => {
+    return await getResources(
+        `/repos/${orgName}/${repoName}/issues?per_page=100`
+    );
+};
 
-       return await getResourses(`/orgs/${orgName}/repos/${repoName}/issues?per_page=100`)
-
-}
-
-export {getAllRepos,getAllIssues};
+export { getAllRepos, getAllIssues };

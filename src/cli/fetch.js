@@ -1,35 +1,38 @@
-// src/cli/fetch.js
 import fs from 'fs/promises'
-import { connectDB } from '../DB/connectDB';
 import { getAllIssues, getAllRepos } from '../github/commandsApi.js'
 import plimit from 'p-limit';
-import { repoModel } from '../Models/repo.model.js';
+import { repoModel } from '../models/repo.model.js';
 import { issueModel } from '../models/issues.model.js';
+import { connectDB } from '../db/connectDB.js';
 
 const CHECKPOINT_FILE = '../../checkpoint.json';
 
-// Pure mapping function (good for unit testing!)
+
 function mapRepo(apiRepo) {
     return {
         org_name: apiRepo.owner.login,
-        name: apiRepo.name,
+        url : apiRepo.html_url,
+        repo_name: apiRepo.name,
         description: apiRepo.description,
         topics: apiRepo.topics,
-        language: apiRepo.language,
+        language: apiRepo.language ? apiRepo.language : null,
         stars: apiRepo.stargazers_count,
         forks: apiRepo.forks_count,
         openIssues: apiRepo.open_issues_count,
-        license: apiRepo.license ? apiRepo.license.spdx_id : null,
+        license: apiRepo.license?.spdx_id ? apiRepo.license.spdx_id : null,
         pushedAt: apiRepo.pushed_at,
     };
 }
 
 
-async function fetchOrgData(org, { since }) {
+const fetchOrgData = async (orgName) => {
 
-    console.log(`Fetching all repos for ${org}...`);
+    await connectDB();
 
-    const allRepos = await getAllRepos(org);
+    console.log(`Fetching all repos for ${orgName}...`);
+
+    const allRepos = await getAllRepos(orgName);
+
 
     const limit = plimit(5);
 
@@ -38,11 +41,11 @@ async function fetchOrgData(org, { since }) {
      
         const repoDoc = mapRepo(repo);
         await repoModel.updateOne(
-            { org_name: repo.owner.login, name: repo.name },
+            { org_name: repo.owner.login, repo_name: repo.name },
             { $set: repoDoc },
             { upsert: true })
 
-        const issues = await getAllIssues(org, repo.name);
+        const issues = await getAllIssues(orgName, repo.name);
         if (issues.length > 0) {
             const issueOps = issues.map(issue => ({
                 updateOne: {
@@ -54,7 +57,6 @@ async function fetchOrgData(org, { since }) {
             await issueModel.bulkWrite(issueOps);
         }
 
-        // 3. Update checkpoint
         await fs.writeFile(CHECKPOINT_FILE, JSON.stringify({ lastProcessedRepo: repo.name }));
     }));
 
@@ -63,4 +65,4 @@ async function fetchOrgData(org, { since }) {
     process.exit(0);
 }
 
-module.exports = { fetchOrgData };
+export {fetchOrgData}

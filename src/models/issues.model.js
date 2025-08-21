@@ -22,9 +22,6 @@ const issueSchema = new Schema({
     }
 }) 
 
-issueSchema.index({repo : 1, number : 1}, {unique: true})
-issueSchema.index({repo : 1, state : 1})
-
 const issueModel = new  mongoose.model("issues", issueSchema);
 
 export {issueModel, issueSchema};

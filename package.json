@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "bin": {
-    "orgpulse": "./bin/orgpulse"
+    "orgpulse": "./src/bin/orgpulse"
   },
   "scripts": {
-    "start": "node ./bin/orgpulse",
+    "start": "node ./src/bin/orgpulse.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "jest"
+    "test": "jest",
+    "op": "node ./src/bin/orgpulse.js"
   },
   "keywords": [],
   "author": "",
@@ -18,8 +19,11 @@
   "dependencies": {
     "axios": "^1.11.0",
     "commander": "^14.0.0",
+    "docker": "^1.0.0",
     "dotenv": "^17.2.1",
+    "json2csv": "^6.0.0-alpha.2",
     "mongoose": "^8.17.2",
+    "nock": "^14.0.10",
     "p-limit": "^7.1.0"
   },
   "devDependencies": {
