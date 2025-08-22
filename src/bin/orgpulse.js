@@ -1,3 +1,7 @@
+#!/usr/bin/env node
+
+
+
 import { Command } from 'commander'
 import dotenv from 'dotenv';
 import { initDB } from '../cli/initDB.js';

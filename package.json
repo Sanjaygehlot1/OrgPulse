@@ -3,14 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "bin": {
-    "orgpulse": "./src/bin/orgpulse"
+    "orgpulse": "./src/bin/orgpulse.js"
   },
   "scripts": {
     "start": "node ./src/bin/orgpulse.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "jest",
-    "op": "node ./src/bin/orgpulse.js"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
