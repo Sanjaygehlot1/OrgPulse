@@ -5,6 +5,7 @@ import { fetchOrgData } from '../cli/fetch.js';
 import { showTopRepos } from '../cli/top.js';
 import { exportRepos } from '../cli/exportAsCSV.js';
 import { getContributors } from '../cli/topContributors.js';
+import { refresh } from '../cli/refreshStars.js';
 
 dotenv.configDotenv({
     path : '.env'
@@ -37,8 +38,8 @@ program
     .action(showTopRepos)
 
 program
-    .command('export <repoName> <filePath>')
-    .description('export repo as a csv file')
+    .command('export <orgName> <filePath>')
+    .description('export repos as a csv file for an organisation')
     .action(exportRepos)
 
 program
@@ -47,5 +48,10 @@ program
   .option('-o, --order <order>', 'sort order: asc or desc')
   .option('-l, --limit <limit>', 'number of contributors to display')
   .action(getContributors);
+
+program
+  .command('sync-stars <orgName>')
+  .description('fetch latest updated for repos of an organisation')
+  .action(refresh);
 
 program.parse(process.argv)

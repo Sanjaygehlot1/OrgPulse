@@ -3,7 +3,7 @@ import { Parser } from "json2csv";
 import {connectDB} from "../db/connectDB.js";
 import {repoModel} from "../models/repo.model.js";
 
-const exportRepos = async (orgName, filePath) => {
+const exportRepos = async (orgName, fileName) => {
   try {
     await connectDB();
 
@@ -14,7 +14,7 @@ const exportRepos = async (orgName, filePath) => {
         process.exit(0);
     }
 
-    filePath = `${filePath}/${orgName}`
+    
 
     const fields = [
       { label: "Repository Name", value: "repo_name" },
@@ -32,9 +32,9 @@ const exportRepos = async (orgName, filePath) => {
     const parser = new Parser({ fields });
     const csv = parser.parse(repos);
 
-    await fs.writeFile(filePath, csv);
+    await fs.writeFile(fileName, csv, {flag :'w'});
 
-    console.log(`Exported ${repos.length} repos to ${filePath}`);
+    console.log(`Exported ${repos.length} repos to ${fileName}`);
   } catch (err) {
     console.error("Error exporting repos:", err.message);
   } finally {

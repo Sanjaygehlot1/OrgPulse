@@ -59,7 +59,7 @@ const getNextPageUrl = (linkHeader) => {
 };
 
  
-const getResources = async (link) => {
+const getResources = async (link,fetchingIssues) => {
     let nextPageUrl = link;
     let result = [];
 
@@ -75,20 +75,24 @@ const getResources = async (link) => {
 
         result = [...result, ...response.data];
 
-        nextPageUrl = getNextPageUrl(response.headers.link);
+        nextPageUrl = null;
+
+        if(!fetchingIssues){
+            nextPageUrl = getNextPageUrl(response.headers.link);
+        }
     }
 
     return result;
 };
  
 const getAllRepos = async (orgName) => {
-    return await getResources(`/orgs/${orgName}/repos?per_page=100`);
+    return await getResources(`/orgs/${orgName}/repos?per_page=100`,false);
 };
 
  
 const getAllIssues = async (orgName, repoName) => {
     return await getResources(
-        `/repos/${orgName}/${repoName}/issues?per_page=100`
+        `/repos/${orgName}/${repoName}/issues?per_page=30`, true
     );
 };
 
